@@ -3,8 +3,9 @@
   <xacro:arg name="laser_visual" default="true"/>
   <xacro:arg name="imu_visual"   default="true"/>
 
+  <!-- Differential Drive Controller Plugin -->
   <gazebo>
-    <plugin name="turtlebot3_burger_controller" filename="libgazebo_ros_diff_drive.so">
+    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
       <commandTopic>cmd_vel</commandTopic>
       <rosDebugLevel>Debug</rosDebugLevel>
       <odometryTopic>odom</odometryTopic>
@@ -28,7 +29,7 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-
+  <!-- Drive Wheel Properties -->
   <gazebo reference="left_wheel_joint">
     <mu1>1000000.0</mu1>
     <mu2>100000.0</mu2>
@@ -51,7 +52,8 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <gazebo reference="caster_left_back_joint">
+  <!-- Caster Wheel Joint Properties -->
+  <gazebo reference="left_caster_back_joint">
     <mu1>1.0</mu1>
     <mu2>0.0</mu2>
     <kp>1000000.0</kp>
@@ -61,7 +63,7 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <gazebo reference="caster_right_back_joint">
+  <gazebo reference="right_caster_back_joint">
     <mu1>1.0</mu1>
     <mu2>0.0</mu2>
     <kp>1000000.0</kp>
@@ -71,7 +73,7 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <gazebo reference="caster_left_front_joint">
+  <gazebo reference="left_caster_front_joint">
     <mu1>1.0</mu1>
     <mu2>0.0</mu2>
     <kp>1000000.0</kp>
@@ -81,7 +83,7 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <gazebo reference="caster_right_front_joint">
+  <gazebo reference="right_caster_front_joint">
     <mu1>1.0</mu1>
     <mu2>0.0</mu2>
     <kp>1000000.0</kp>
@@ -91,9 +93,9 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-
+  <!-- IMU Sensor Plugin -->
   <gazebo>
-    <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
+    <plugin name="imu_sensor_plugin" filename="libgazebo_ros_imu.so">
       <alwaysOn>true</alwaysOn>
       <bodyName>imu_link</bodyName>
       <topicName>imu</topicName>
@@ -121,7 +123,7 @@
   </gazebo>
 
   <gazebo reference="imu_link">
-    <sensor type="imu" name="imu">
+    <sensor type="imu" name="imu_sensor">
       <always_on>true</always_on>
       <update_rate>100</update_rate>
       <visualize>$(arg imu_visual)</visualize>
@@ -129,9 +131,10 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <gazebo reference="base_scan">
+  <!-- Front Laser Scanner Sensor -->
+  <gazebo reference="laser_front_link">
     <material>Gazebo/Blue</material>
-    <sensor type="ray" name="lds_lfcd_sensor">
+    <sensor type="ray" name="front_laser_sensor">
       <pose>0.0 0.0 0.0 0 0 0</pose>
       <visualize>$(arg laser_visual)</visualize>
       <update_rate>18.0</update_rate>
@@ -155,12 +158,11 @@
           <stddev>0.01</stddev>
         </noise>
       </ray>
-      <plugin name="gazebo_ros_lds_lfcd_controller" filename="libgazebo_ros_laser.so">
-        <topicName>scan///</topicName>
-        <frameName>base_scan</frameName>
+      <plugin name="front_laser_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>laser_front_link</frameName>
       </plugin>
     </sensor>
   </gazebo>
-
 
 </robot>
