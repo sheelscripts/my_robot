@@ -11,13 +11,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xfce4 \
     xfce4-terminal \
     dbus-x11 \
-    nano \
     vim \
     tigervnc-standalone-server \
     novnc \
     websockify \
     ros-jazzy-desktop \
     ros-jazzy-ros-gz \
+    ros-jazzy-nav2-map-server \
     ros-jazzy-joint-state-publisher-gui \
     ros-jazzy-urdf-tutorial \
     ros-jazzy-teleop-twist-keyboard \
@@ -45,4 +45,4 @@ CMD ["sh", "-c", "\
     rm -rf /tmp/.X1-lock /tmp/.X11-unix/X1 && \
     vncserver :1 -geometry 1920x1080 -depth 24 -SecurityTypes None -xstartup /usr/bin/startxfce4 && \
     websockify --web=/usr/share/novnc 6080 localhost:5901 \
-"]
+    "]
