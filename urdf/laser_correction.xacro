@@ -1,0 +1,26 @@
+
+<robot name="agv_trial" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="laser_front_x" value="0.71179" /> <!-- 0.70179 -->
+  <xacro:property name="laser_front_y" value="0.47912" /> <!-- 0.39912 -->
+  <xacro:property name="laser_front_z" value="0.17501" />
+  <xacro:property name="laser_front_roll" value="-3.1416" />
+  <xacro:property name="laser_front_pitch" value="0.0" />
+  <xacro:property name="laser_front_yaw" value="0.768395" /> <!-- 0.7854 -->
+
+  <xacro:property name="laser_back_x" value="-0.70179" />
+  <xacro:property name="laser_back_y" value="-0.30912" /> <!-- -0.39912 -->
+  <xacro:property name="laser_back_z" value="0.17501" />
+  <xacro:property name="laser_back_roll" value="-3.1416" />
+  <xacro:property name="laser_back_pitch" value="0.0" />
+  <xacro:property name="laser_back_yaw" value="-2.33875" /> <!-- -2.3562 -->
+
+  <xacro:property name="laser_3d_x" value="0.82726" />
+  <xacro:property name="laser_3d_y" value="-0.55936" />
+  <xacro:property name="laser_3d_z" value="0.40005" />
+  <xacro:property name="laser_3d_roll" value="-3.1416" />
+  <xacro:property name="laser_3d_pitch" value="0.0" />
+  <xacro:property name="laser_3d_yaw" value="-2.33875" />
+
+</robot>
+
