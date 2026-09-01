@@ -11,7 +11,7 @@
   <xacro:macro name="box_inertia" params="mass size_x size_y size_z">
     <inertia  ixx="${mass*(size_y*size_y + size_z*size_z)/12}" ixy="0" ixz="0"
               iyy="${mass*(size_x*size_x + size_z*size_z)/12}" iyz="0"
-              izz="${mass*(size_x*size_x + size_z*size_z)/12}" /> 
+              izz="${mass*(size_x*size_x + size_y*size_y)/12}" /> 
   </xacro:macro>
 
   <xacro:macro name="sphere_inertia" params="mass radius">
@@ -39,7 +39,7 @@
       </collision>
       <inertial>
         <mass value="${wheel_mass}" />
-        <inertia ixx="0.01300" ixy="0" ixz="0" iyy="0.007042" iyz="0" izz="0.007042" />
+        <xacro:cylinder_inertia mass="${wheel_mass}" radius="${wheel_radius}" length="${wheel_width}"/>
       </inertial>
     </link>
     <gazebo reference="${wheel_side}_wheel">
@@ -52,7 +52,7 @@
     </gazebo>
   </xacro:macro>
 
-  <!-- Passive Caster Wheel Macro -->
+  <!-- Single Passive Caster Macro -->
   <xacro:macro name="caster" params="prefix offset_x offset_y mass:=5.2 mu1:=0.0 mu2:=0.0">
     <joint name="${prefix}_caster_joint" type="fixed">
       <parent link="base_link"/>
@@ -84,8 +84,14 @@
     </gazebo>
   </xacro:macro>
 
-  <!-- Cylindrical Laser Scanner Macro -->
-  <xacro:macro name="laser_sensor" params="name x y z roll pitch yaw mass:=0.5925 length:=0.151 radius:=0.05">
+  <!-- Symmetric Caster Pair Macro (Left & Right) -->
+  <xacro:macro name="caster_pair" params="location offset_x offset_y mass:=5.2">
+    <xacro:caster prefix="left_${location}"  offset_x="${offset_x}" offset_y="${offset_y}"  mass="${mass}"/>
+    <xacro:caster prefix="right_${location}" offset_x="${offset_x}" offset_y="${-offset_y}" mass="${mass}"/>
+  </xacro:macro>
+
+  <!-- Self-Contained Cylindrical LiDAR Macro (Kinematics + Gz Sim Sensor Stream) -->
+  <xacro:macro name="lidar_sensor" params="name x y z roll pitch yaw topic_name mass:=0.5925 length:=0.151 radius:=0.05 samples:=360 v_samples:=1 min_angle:=-3.14159 max_angle:=3.14159 v_min_angle:=-0.261799 v_max_angle:=0.261799 min_range:=0.120 max_range:=15.0 update_rate:=20.0 noise_stddev:=0.01">
     <link name="${name}_link">
       <visual>
         <geometry><cylinder length="${length}" radius="${radius}"/></geometry>
@@ -105,14 +111,51 @@
       <child link="${name}_link"/>
       <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
     </joint>
+
+    <!-- Encapsulated Gz Sim LiDAR Sensor -->
     <gazebo reference="${name}_link">
       <material>Gazebo/Blue</material>
+      <sensor name="${name}_sensor" type="gpu_lidar">
+        <always_on>true</always_on>
+        <update_rate>${update_rate}</update_rate>
+        <visualize>false</visualize>
+        <topic>${topic_name}</topic>
+        <gz_frame_id>${name}_link</gz_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>${samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>${min_angle}</min_angle>
+              <max_angle>${max_angle}</max_angle>
+            </horizontal>
+            <xacro:if value="${v_samples > 1}">
+              <vertical>
+                <samples>${v_samples}</samples>
+                <resolution>1</resolution>
+                <min_angle>${v_min_angle}</min_angle>
+                <max_angle>${v_max_angle}</max_angle>
+              </vertical>
+            </xacro:if>
+          </scan>
+          <range>
+            <min>${min_range}</min>
+            <max>${max_range}</max>
+            <resolution>0.015</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>${noise_stddev}</stddev>
+          </noise>
+        </lidar>
+      </sensor>
     </gazebo>
   </xacro:macro>
 
-  <!-- Camera Mount Joint, Visual Body, and Standard Optical Frame Macro -->
-  <xacro:macro name="camera_mount" params="num x y z roll pitch yaw">
-    <link name="camera_${num}_link">
+  <!-- Self-Contained Camera Macro (Kinematics + Optical Frame + Gz Sim Stream) -->
+  <xacro:macro name="camera_mount" params="name x y z roll pitch yaw width:=640 height:=480 hfov:=1.5184 update_rate:=30.0">
+    <link name="${name}_link">
       <visual>
         <geometry><box size="0.025 0.090 0.025"/></geometry>
         <material name="black"/>
@@ -126,19 +169,42 @@
         <xacro:box_inertia mass="0.1" size_x="0.025" size_y="0.090" size_z="0.025"/>
       </inertial>
     </link>
-    <joint name="camera_${num}_joint" type="fixed">
+    <joint name="${name}_joint" type="fixed">
       <parent link="base_link"/>
-      <child link="camera_${num}_link"/>
+      <child link="${name}_link"/>
       <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
       <axis xyz="0 0 0"/>
     </joint>
 
-    <link name="camera_${num}_color_optical_frame"/>
-    <joint name="camera_${num}_color_optical_joint" type="fixed">
-      <parent link="camera_${num}_link"/>
-      <child link="camera_${num}_color_optical_frame"/>
+    <link name="${name}_color_optical_frame"/>
+    <joint name="${name}_color_optical_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_color_optical_frame"/>
       <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
     </joint>
+
+    <!-- Encapsulated Gz Sim Camera Sensor -->
+    <gazebo reference="${name}_link">
+      <sensor name="${name}" type="camera">
+        <always_on>true</always_on>
+        <update_rate>${update_rate}</update_rate>
+        <visualize>false</visualize>
+        <topic>/${name}/image_raw</topic>
+        <gz_frame_id>${name}_color_optical_frame</gz_frame_id>
+        <camera>
+          <horizontal_fov>${hfov}</horizontal_fov>
+          <image>
+            <width>${width}</width>
+            <height>${height}</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>15.0</far>
+          </clip>
+        </camera>
+      </sensor>
+    </gazebo>
   </xacro:macro>
 
 </robot>

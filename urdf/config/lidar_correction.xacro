@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<robot name="agv" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Front LiDAR Calibration Offsets -->
+  <xacro:property name="front_lidar_x" value="0.71179" />
+  <xacro:property name="front_lidar_y" value="0.47912" />
+  <xacro:property name="front_lidar_z" value="0.17501" />
+  <xacro:property name="front_lidar_roll" value="-3.1416" />
+  <xacro:property name="front_lidar_pitch" value="0.0" />
+  <xacro:property name="front_lidar_yaw" value="0.768395" />
+
+  <!-- Rear LiDAR Calibration Offsets -->
+  <xacro:property name="rear_lidar_x" value="-0.70179" />
+  <xacro:property name="rear_lidar_y" value="-0.30912" />
+  <xacro:property name="rear_lidar_z" value="0.17501" />
+  <xacro:property name="rear_lidar_roll" value="-3.1416" />
+  <xacro:property name="rear_lidar_pitch" value="0.0" />
+  <xacro:property name="rear_lidar_yaw" value="-2.33875" />
+
+  <!-- 3D LiDAR Calibration Offsets -->
+  <xacro:property name="lidar_3d_x" value="0.82726" />
+  <xacro:property name="lidar_3d_y" value="-0.55936" />
+  <xacro:property name="lidar_3d_z" value="0.40005" />
+  <xacro:property name="lidar_3d_roll" value="-3.1416" />
+  <xacro:property name="lidar_3d_pitch" value="0.0" />
+  <xacro:property name="lidar_3d_yaw" value="-2.33875" />
+
+</robot>

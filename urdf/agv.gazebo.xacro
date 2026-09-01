@@ -1,133 +1,62 @@
 <?xml version="1.0"?>
 <robot name="agv" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:arg name="laser_visual" default="true"/>
-  <xacro:arg name="imu_visual"   default="true"/>
 
-  <!-- Differential Drive Controller Plugin -->
+  <xacro:arg name="imu_visual" default="false"/>
+
+  <!-- System Plugins -->
   <gazebo>
-    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
-      <commandTopic>cmd_vel</commandTopic>
-      <rosDebugLevel>Debug</rosDebugLevel>
-      <odometryTopic>odom</odometryTopic>
-      <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>base_footprint</robotBaseFrame>
-      <publishWheelTF>false</publishWheelTF>
-      <publishWheelJointState>true</publishWheelJointState>
-      <legacyMode>false</legacyMode>
-      <updateRate>50</updateRate>
-      <alwaysOn>true</alwaysOn>
-      <leftJoint>left_wheel_joint</leftJoint>
-      <rightJoint>right_wheel_joint</rightJoint>
-      <wheelSeparation>0.81298</wheelSeparation>
-      <wheelDiameter>0.200</wheelDiameter>
-      <wheelAcceleration>1</wheelAcceleration>
-      <wheelTorque>34.52</wheelTorque>
+    <!-- Diff Drive -->
+    <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>${wheel_track}</wheel_separation>
+      <wheel_radius>${wheel_radius}</wheel_radius>
+      <max_linear_acceleration>1.0</max_linear_acceleration>
+      <max_angular_acceleration>2.0</max_angular_acceleration>
+      <min_velocity>-1.5</min_velocity>
+      <max_velocity>1.5</max_velocity>
+      <topic>/cmd_vel</topic>
+      <odom_topic>/odom</odom_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+      <odom_publisher_frequency>50</odom_publisher_frequency>
+      <tf_topic>/tf</tf_topic>
+    </plugin>
+
+    <!-- Joint State Publisher -->
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <topic>/joint_states</topic>
+      <joint_name>left_wheel_joint</joint_name>
+      <joint_name>right_wheel_joint</joint_name>
     </plugin>
   </gazebo>
 
+  <!-- Base Link Material -->
   <gazebo reference="base_link">
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <!-- Drive Wheel Contact Properties -->
-  <gazebo reference="left_wheel">
-    <mu1>1000000.0</mu1>
-    <mu2>100000.0</mu2>
-    <kp>5000000.0</kp>
-    <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
-    <maxVel>1.5</maxVel>
-    <fdir1>1 0 0</fdir1>
-    <material>Gazebo/Grey</material>
-  </gazebo>
-
-  <gazebo reference="right_wheel">
-    <mu1>1000000.0</mu1>
-    <mu2>100000.0</mu2>
-    <kp>5000000.0</kp>
-    <kd>100.0</kd>
-    <minDepth>0.001</minDepth>
-    <maxVel>0.8</maxVel>
-    <fdir1>1 0 0</fdir1>
-    <material>Gazebo/Grey</material>
-  </gazebo>
-
-  <!-- IMU Sensor Plugin -->
-  <gazebo>
-    <plugin name="imu_sensor_plugin" filename="libgazebo_ros_imu.so">
-      <alwaysOn>true</alwaysOn>
-      <bodyName>imu_link</bodyName>
-      <topicName>imu</topicName>
-      <serviceName>imu_service</serviceName>
-      <gaussianNoise>0.0</gaussianNoise>
-      <updateRate>100.0</updateRate>
-      <imu>
-        <noise>
-          <type>gaussian</type>
-          <rate>
-            <mean>0.0</mean>
-            <stddev>2e-4</stddev>
-            <bias_mean>0.0000075</bias_mean>
-            <bias_stddev>0.0000008</bias_stddev>
-          </rate>
-          <accel>
-            <mean>0.0</mean>
-            <stddev>1.7e-2</stddev>
-            <bias_mean>0.1</bias_mean>
-            <bias_stddev>0.001</bias_stddev>
-          </accel>
-        </noise>
-      </imu>
-    </plugin>
-  </gazebo>
-
+  <!-- IMU Sensor (Standard ROS topic: /imu/data, tune noise stddev via Allan variance/datasheet) -->
   <gazebo reference="imu_link">
-    <sensor type="imu" name="imu_sensor">
+    <sensor name="imu_sensor" type="imu">
       <always_on>true</always_on>
-      <update_rate>100</update_rate>
+      <update_rate>100.0</update_rate>
       <visualize>$(arg imu_visual)</visualize>
+      <topic>/imu/data</topic>
+      <gz_frame_id>imu_link</gz_frame_id>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></z>
+        </linear_acceleration>
+      </imu>
     </sensor>
-    <material>Gazebo/Grey</material>
   </gazebo>
-
-  <!-- Laser Sensor Plugin Macro -->
-  <xacro:macro name="gazebo_laser_plugin" params="link_name sensor_name topic_name update_rate:=18.0 min_angle:=-3.14159 max_angle:=3.14159">
-    <gazebo reference="${link_name}">
-      <material>Gazebo/Blue</material>
-      <sensor type="ray" name="${sensor_name}">
-        <pose>0 0 0 0 0 0</pose>
-        <visualize>$(arg laser_visual)</visualize>
-        <update_rate>${update_rate}</update_rate>
-        <ray>
-          <scan>
-            <horizontal>
-              <samples>360</samples>
-              <resolution>1</resolution>
-              <min_angle>${min_angle}</min_angle>
-              <max_angle>${max_angle}</max_angle>
-            </horizontal>
-          </scan>
-          <range>
-            <min>0.120</min>
-            <max>10.0</max>
-            <resolution>0.025</resolution>
-          </range>
-          <noise>
-            <type>gaussian</type>
-            <mean>0.0</mean>
-            <stddev>0.01</stddev>
-          </noise>
-        </ray>
-        <plugin name="${sensor_name}_controller" filename="libgazebo_ros_laser.so">
-          <topicName>${topic_name}</topicName>
-          <frameName>${link_name}</frameName>
-        </plugin>
-      </sensor>
-    </gazebo>
-  </xacro:macro>
-
-  <!-- Front and Back 2D Laser Ray Sensors -->
-  <xacro:gazebo_laser_plugin link_name="laser_front_link" sensor_name="front_laser" topic_name="scan_front"/>
-  <xacro:gazebo_laser_plugin link_name="laser_back_link"  sensor_name="back_laser"  topic_name="scan_back"/>
 
 </robot>

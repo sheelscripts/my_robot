@@ -10,18 +10,19 @@
   <!-- Caster Wheel Dimensions -->
   <xacro:property name="caster_radius" value="0.062"/>
 
-  <!-- Drive Wheel Dimensions -->
+  <!-- Drive Wheel Dimensions & Kinematics -->
   <xacro:property name="wheel_width" value="0.05"/>
   <xacro:property name="wheel_radius" value="0.1"/>
   <xacro:property name="wheel_mass" value="2"/>
+  <xacro:property name="wheel_track" value="0.81298"/>
 
   <!-- Included Configurations & Modules -->
   <xacro:include filename="config/common_properties.xacro"/>
-  <xacro:include filename="config/laser_correction.xacro"/>
+  <xacro:include filename="config/lidar_correction.xacro"/>
   <xacro:include filename="config/camera_correction.xacro"/>
   <xacro:include filename="config/imu_joint.xacro"/>
-  <xacro:include filename="agv.gazebo.xacro"/>
   <xacro:include filename="agv.macros.xacro"/>
+  <xacro:include filename="agv.gazebo.xacro"/>
   
   <!-- Base Footprint & Link -->
   <link name="base_footprint"/>
@@ -40,20 +41,18 @@
     </inertial>  
   </link>
 
-  <!-- Drive Wheels -->
-  <wheel wheel_side="left" offset_y="0.40649"/>
-  <wheel wheel_side="right" offset_y="-0.40649"/>
+  <!-- Drive Wheels (Symmetric Mounting based on wheel_track) -->
+  <wheel wheel_side="left"  offset_y="${wheel_track / 2}"/>
+  <wheel wheel_side="right" offset_y="${-wheel_track / 2}"/>
 
-  <!-- Caster Wheels -->
-  <caster prefix="left_front" offset_x="0.650" offset_y="0.400" mass="5.2"/>
-  <caster prefix="right_front" offset_x="0.650" offset_y="-0.400" mass="5.2"/>
-  <caster prefix="left_back" offset_x="-0.650" offset_y="0.400" mass="0.01"/>
-  <caster prefix="right_back" offset_x="-0.650" offset_y="-0.400" mass="0.01"/>
+  <!-- Caster Wheel Pairs (Front & Back) -->
+  <caster_pair location="front" offset_x="0.650"  offset_y="0.400" mass="5.2"/>
+  <caster_pair location="back"  offset_x="-0.650" offset_y="0.400" mass="0.01"/>
 
-  <!-- Lasers -->
-  <laser_sensor name="laser_front" x="${laser_front_x}" y="${laser_front_y}" z="${laser_front_z}" roll="${laser_front_roll}" pitch="${laser_front_pitch}" yaw="${laser_front_yaw}"/>
-  <laser_sensor name="laser_back" x="${laser_back_x}" y="${laser_back_y}" z="${laser_back_z}" roll="${laser_back_roll}" pitch="${laser_back_pitch}" yaw="${laser_back_yaw}"/>
-  <laser_sensor name="laser_3d" x="${laser_3d_x}" y="${laser_3d_y}" z="${laser_3d_z}" roll="${laser_3d_roll}" pitch="${laser_3d_pitch}" yaw="${laser_3d_yaw}" mass="1.5"/>
+  <!-- 2D & 3D LiDAR Sensors (Kinematics + Simulation Stream) -->
+  <lidar_sensor name="front_lidar" x="${front_lidar_x}" y="${front_lidar_y}" z="${front_lidar_z}" roll="${front_lidar_roll}" pitch="${front_lidar_pitch}" yaw="${front_lidar_yaw}" topic_name="/front_lidar/scan"/>
+  <lidar_sensor name="rear_lidar"  x="${rear_lidar_x}"  y="${rear_lidar_y}"  z="${rear_lidar_z}"  roll="${rear_lidar_roll}"  pitch="${rear_lidar_pitch}"  yaw="${rear_lidar_yaw}"  topic_name="/rear_lidar/scan"/>
+  <lidar_sensor name="lidar_3d"    x="${lidar_3d_x}"    y="${lidar_3d_y}"    z="${lidar_3d_z}"    roll="${lidar_3d_roll}"    pitch="${lidar_3d_pitch}"    yaw="${lidar_3d_yaw}"    topic_name="/lidar_3d/points" mass="1.5" samples="1800" v_samples="16" v_min_angle="-0.261799" v_max_angle="0.261799" min_range="0.20" max_range="50.0" update_rate="10.0" noise_stddev="0.02"/>
 
   <!-- IMU Sensor -->
   <link name="imu_link">
@@ -68,10 +67,10 @@
     <origin xyz="${imu_x} ${imu_y} ${imu_z}" rpy="${imu_roll} ${imu_pitch} ${imu_yaw}"/>
   </joint>
 
-  <!-- Cameras (Mounts + Optical Frames) -->
-  <camera_mount num="1" x="${camera_1_x}" y="${camera_1_y}" z="${camera_1_z}" roll="${camera_1_roll}" pitch="${camera_1_pitch}" yaw="${camera_1_yaw}"/>
-  <camera_mount num="2" x="${camera_2_x}" y="${camera_2_y}" z="${camera_2_z}" roll="${camera_2_roll}" pitch="${camera_2_pitch}" yaw="${camera_2_yaw}"/>
-  <camera_mount num="3" x="${camera_3_x}" y="${camera_3_y}" z="${camera_3_z}" roll="${camera_3_roll}" pitch="${camera_3_pitch}" yaw="${camera_3_yaw}"/>
-  <camera_mount num="4" x="${camera_4_x}" y="${camera_4_y}" z="${camera_4_z}" roll="${camera_4_roll}" pitch="${camera_4_pitch}" yaw="${camera_4_yaw}"/>
+  <!-- Cameras (Mounts + Optical Frames + Simulation Stream) -->
+  <camera_mount name="camera_front_left"  x="${camera_front_left_x}"  y="${camera_front_left_y}"  z="${camera_front_left_z}"  roll="${camera_front_left_roll}"  pitch="${camera_front_left_pitch}"  yaw="${camera_front_left_yaw}"/>
+  <camera_mount name="camera_front_right" x="${camera_front_right_x}" y="${camera_front_right_y}" z="${camera_front_right_z}" roll="${camera_front_right_roll}" pitch="${camera_front_right_pitch}" yaw="${camera_front_right_yaw}"/>
+  <camera_mount name="camera_rear_left"   x="${camera_rear_left_x}"   y="${camera_rear_left_y}"   z="${camera_rear_left_z}"   roll="${camera_rear_left_roll}"   pitch="${camera_rear_left_pitch}"   yaw="${camera_rear_left_yaw}"/>
+  <camera_mount name="camera_rear_right"  x="${camera_rear_right_x}"  y="${camera_rear_right_y}"  z="${camera_rear_right_z}"  roll="${camera_rear_right_roll}"  pitch="${camera_rear_right_pitch}"  yaw="${camera_rear_right_yaw}"/>
 
 </robot>

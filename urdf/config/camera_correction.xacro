@@ -1,36 +1,36 @@
 <?xml version="1.0" ?>
 <robot name="agv" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Camera 1 Mount Offsets -->
-  <xacro:property name="camera_1_x" value="0.73448"/>
-  <xacro:property name="camera_1_y" value="0.1567"/>
-  <xacro:property name="camera_1_z" value="0.1225"/>
-  <xacro:property name="camera_1_roll" value="0.0"/>
-  <xacro:property name="camera_1_pitch" value="0.0"/>
-  <xacro:property name="camera_1_yaw" value="-0.5236"/>
+  <!-- Front Left Camera Mount Offsets -->
+  <xacro:property name="camera_front_left_x" value="0.73448"/>
+  <xacro:property name="camera_front_left_y" value="0.1567"/>
+  <xacro:property name="camera_front_left_z" value="0.1225"/>
+  <xacro:property name="camera_front_left_roll" value="0.0"/>
+  <xacro:property name="camera_front_left_pitch" value="0.0"/>
+  <xacro:property name="camera_front_left_yaw" value="-0.5236"/>
 
-  <!-- Camera 2 Mount Offsets -->
-  <xacro:property name="camera_2_x" value="0.73448"/>
-  <xacro:property name="camera_2_y" value="-0.1567"/>
-  <xacro:property name="camera_2_z" value="0.1225"/>
-  <xacro:property name="camera_2_roll" value="0.0"/>
-  <xacro:property name="camera_2_pitch" value="0.0"/>
-  <xacro:property name="camera_2_yaw" value="0.5236"/>
+  <!-- Front Right Camera Mount Offsets -->
+  <xacro:property name="camera_front_right_x" value="0.73448"/>
+  <xacro:property name="camera_front_right_y" value="-0.1567"/>
+  <xacro:property name="camera_front_right_z" value="0.1225"/>
+  <xacro:property name="camera_front_right_roll" value="0.0"/>
+  <xacro:property name="camera_front_right_pitch" value="0.0"/>
+  <xacro:property name="camera_front_right_yaw" value="0.5236"/>
 
-  <!-- Camera 3 Mount Offsets -->
-  <xacro:property name="camera_3_x" value="-0.73558"/>
-  <xacro:property name="camera_3_y" value="-0.1568"/>
-  <xacro:property name="camera_3_z" value="0.1225"/>
-  <xacro:property name="camera_3_roll" value="0.0"/>
-  <xacro:property name="camera_3_pitch" value="0.0"/>
-  <xacro:property name="camera_3_yaw" value="2.618"/>
+  <!-- Rear Left Camera Mount Offsets -->
+  <xacro:property name="camera_rear_left_x" value="-0.73558"/>
+  <xacro:property name="camera_rear_left_y" value="0.1568"/>
+  <xacro:property name="camera_rear_left_z" value="0.1225"/>
+  <xacro:property name="camera_rear_left_roll" value="0.0"/>
+  <xacro:property name="camera_rear_left_pitch" value="0.0"/>
+  <xacro:property name="camera_rear_left_yaw" value="-2.618"/>
 
-  <!-- Camera 4 Mount Offsets -->
-  <xacro:property name="camera_4_x" value="-0.73558"/>
-  <xacro:property name="camera_4_y" value="0.1568"/>
-  <xacro:property name="camera_4_z" value="0.1225"/>
-  <xacro:property name="camera_4_roll" value="0.0"/>
-  <xacro:property name="camera_4_pitch" value="0.0"/>
-  <xacro:property name="camera_4_yaw" value="-2.618"/>
+  <!-- Rear Right Camera Mount Offsets -->
+  <xacro:property name="camera_rear_right_x" value="-0.73558"/>
+  <xacro:property name="camera_rear_right_y" value="-0.1568"/>
+  <xacro:property name="camera_rear_right_z" value="0.1225"/>
+  <xacro:property name="camera_rear_right_roll" value="0.0"/>
+  <xacro:property name="camera_rear_right_pitch" value="0.0"/>
+  <xacro:property name="camera_rear_right_yaw" value="2.618"/>
 
 </robot>
