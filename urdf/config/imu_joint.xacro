@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<robot name="agv" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- IMU Sensor Calibration Offsets -->
+  <xacro:property name="imu_x" value="0.0"/>
+  <xacro:property name="imu_y" value="0.0"/>
+  <xacro:property name="imu_z" value="0.100"/>
+  <xacro:property name="imu_roll" value="0.0"/>
+  <xacro:property name="imu_pitch" value="0.0"/>
+  <xacro:property name="imu_yaw" value="0.0"/>
+
+</robot>

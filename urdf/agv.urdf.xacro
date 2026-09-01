@@ -1,74 +1,42 @@
 <?xml version="1.0" ?>
 <robot name="agv" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- General Arguments & Constants -->
-  <xacro:arg name="robot_namespace" default="/" />
-  <xacro:property name="M_PI" value="3.1415926535897931"/>
-
   <!-- Chassis Physical Dimensions & Mass -->
   <xacro:property name="chassis_length" value="1.558"/>
   <xacro:property name="chassis_width" value="0.965"/>
   <xacro:property name="chassis_height" value="0.280"/>
   <xacro:property name="chassis_mass" value="300"/>
-
-  <!-- Caster Wheel Physical Dimensions & Mass -->
+  
+  <!-- Caster Wheel Dimensions -->
   <xacro:property name="caster_radius" value="0.062"/>
-  <xacro:property name="caster_length" value="0.05"/>
-  <xacro:property name="caster_mass" value="5.2"/>
 
-  <!-- Drive Wheel Physical Dimensions & Mass -->
+  <!-- Drive Wheel Dimensions -->
   <xacro:property name="wheel_width" value="0.05"/>
   <xacro:property name="wheel_radius" value="0.1"/>
   <xacro:property name="wheel_mass" value="2"/>
 
-  <!-- Path and Model Arguments -->
-  <xacro:arg name="config_path" default="" />
-  <xacro:arg name="robot_model" default="$(env AMR_MODEL)"/>
-  <xacro:arg name="parameters_dir" default="$(env ROS_PACKAGE_PATH)"/>
-
-  <!-- Included Xacro Files -->
-  <xacro:include filename="$(arg parameters_dir)/Product/$(arg robot_model)/RobotUrdf/common_properties.xacro"/>
-  <xacro:include filename="$(arg config_path)/_CONFIG_/laser_correction.xacro"/>
-  <xacro:include filename="$(arg config_path)/_CONFIG_/camera_correction.xacro"/>
-  <xacro:include filename="$(arg config_path)/_CONFIG_/imu_joint.xacro"/>
-  <xacro:include filename="$(arg parameters_dir)/Product/$(arg robot_model)/RobotUrdf/agv.gazebo.xacro"/>
-  <xacro:include filename="$(arg parameters_dir)/Product/$(arg robot_model)/RobotUrdf/agv.macros.xacro"/>
+  <!-- Included Configurations & Modules -->
+  <xacro:include filename="config/common_properties.xacro"/>
+  <xacro:include filename="config/laser_correction.xacro"/>
+  <xacro:include filename="config/camera_correction.xacro"/>
+  <xacro:include filename="config/imu_joint.xacro"/>
+  <xacro:include filename="agv.gazebo.xacro"/>
+  <xacro:include filename="agv.macros.xacro"/>
   
-  <!-- Base Footprint (Ground Projection Link) -->
+  <!-- Base Footprint & Link -->
   <link name="base_footprint"/>
-
   <joint name="base_footprint_to_base_link_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="base_link"/>
-    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
-  <!-- Chassis Base Link -->
   <link name="base_link">
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
-      </geometry>
-    </collision>
-
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="${chassis_length} ${chassis_width} ${chassis_height}"/>
-      </geometry>
-      <material name="grey"/>
-    </visual>
-
+    <collision><geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry></collision>
+    <visual><geometry><box size="${chassis_length} ${chassis_width} ${chassis_height}"/></geometry><material name="grey"/></visual>
     <inertial>
-      <origin xyz="0 0 0" />
       <mass value="${chassis_mass}" />
-      <inertia ixx="3.9687"
-        ixy="0.28534"
-        ixz="0.11898"
-        iyy="11.378"
-        iyz="0.0073517"
-        izz="8.1939" />
+      <inertia ixx="3.9687" ixy="0.28534" ixz="0.11898" iyy="11.378" iyz="0.00735" izz="8.1939" />
     </inertial>  
   </link>
 
@@ -76,165 +44,34 @@
   <wheel wheel_side="left" offset_y="0.40649"/>
   <wheel wheel_side="right" offset_y="-0.40649"/>
 
-  <!-- Caster Wheels (Front & Back) -->
-  <caster_front caster_side="left" offset_y="0.400"/>
-  <caster_front caster_side="right" offset_y="-0.400"/>
-  <caster_back caster_side="left" offset_y="0.400" />
-  <caster_back caster_side="right" offset_y="-0.400"/>
+  <!-- Caster Wheels -->
+  <caster prefix="left_front" offset_x="0.650" offset_y="0.400" mass="5.2"/>
+  <caster prefix="right_front" offset_x="0.650" offset_y="-0.400" mass="5.2"/>
+  <caster prefix="left_back" offset_x="-0.650" offset_y="0.400" mass="0.01"/>
+  <caster prefix="right_back" offset_x="-0.650" offset_y="-0.400" mass="0.01"/>
 
-  <!-- Front Laser Scanner -->
-  <link name="laser_front_link">
-    <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.151" radius="0.05"/>
-      </geometry>
-      <material name="blue"/>
-    </visual>
-    <collision>
-      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.151" radius="0.05"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.5925" />
-      <origin xyz="-7.8833E-05 4.3529E-05 -0.016941" rpy="0 0 0" />
-      <inertia ixx="0.00070857"
-        ixy="-1.3137E-06"
-        ixz="1.6001E-06"
-        iyy="0.00070663"
-        iyz="3.8031E-07"
-        izz="0.0008093" />
-    </inertial>
-  </link>
-
-  <joint name="laser_front_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="laser_front_link"/>
-    <origin xyz="${laser_front_x} ${laser_front_y} ${laser_front_z}" rpy="${laser_front_roll} ${laser_front_pitch} ${laser_front_yaw}"/>
-  </joint>
-
-  <!-- Back Laser Scanner -->
-  <link name="laser_back_link">
-    <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.151" radius="0.05"/>
-      </geometry>
-      <material name="blue"/>
-    </visual>
-    <collision>
-      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.151" radius="0.05"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="0.5925" />
-      <origin xyz="-7.8839E-05 4.3846E-05 -0.016941" rpy="0 0 0" />
-      <inertia ixx="0.00070857"
-        ixy="-1.3137E-06"
-        ixz="1.6001E-06"
-        iyy="0.00070663"
-        iyz="3.8031E-07"
-        izz="0.0008093"/>
-    </inertial>
-  </link>
-
-  <joint name="laser_back_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="laser_back_link"/>
-    <origin xyz="${laser_back_x} ${laser_back_y} ${laser_back_z}" rpy="${laser_back_roll} ${laser_back_pitch} ${laser_back_yaw}"/>
-  </joint>
-
-  <!-- 3D Laser Scanner -->
-  <link name="laser_3d_link">
-    <visual>
-      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.151" radius="0.05"/>
-      </geometry>
-      <material name="blue"/>
-    </visual>
-    <collision>
-      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-      <geometry>
-        <cylinder length="0.151" radius="0.05"/>
-      </geometry>
-    </collision>
-    <inertial>
-      <mass value="1.5" />
-      <origin xyz="0.0 0.0 0" />
-      <inertia ixx="0.003" ixy="0.0" ixz="0.0"
-               iyy="0.003" iyz="0.0"
-               izz="0.0018" />
-    </inertial>
-  </link>
-
-  <joint name="laser_3d_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="laser_3d_link"/>
-    <origin xyz="${laser_3d_x} ${laser_3d_y} ${laser_3d_z}" rpy="${laser_3d_roll} ${laser_3d_pitch} ${laser_3d_yaw}"/>
-  </joint>
-
-  <!-- Primary / PNF Laser Link -->
-  <link name="laser_pnf_link"/>
-  <joint name="laser_pnf_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="laser_pnf_link"/>
-    <origin xyz="${laser_x} ${laser_y} ${laser_z}" rpy="${laser_roll} ${laser_pitch} ${laser_yaw}"/>
-  </joint>
+  <!-- Lasers -->
+  <laser_sensor name="laser_front" x="${laser_front_x}" y="${laser_front_y}" z="${laser_front_z}" roll="${laser_front_roll}" pitch="${laser_front_pitch}" yaw="${laser_front_yaw}"/>
+  <laser_sensor name="laser_back" x="${laser_back_x}" y="${laser_back_y}" z="${laser_back_z}" roll="${laser_back_roll}" pitch="${laser_back_pitch}" yaw="${laser_back_yaw}"/>
+  <laser_sensor name="laser_3d" x="${laser_3d_x}" y="${laser_3d_y}" z="${laser_3d_z}" roll="${laser_3d_roll}" pitch="${laser_3d_pitch}" yaw="${laser_3d_yaw}" mass="1.5"/>
 
   <!-- IMU Sensor -->
-  <link name="imu_link"/>
+  <link name="imu_link">
+    <visual>
+      <geometry><box size="0.05 0.05 0.02"/></geometry>
+      <material name="black"/>
+    </visual>
+  </link>
   <joint name="imu_joint" type="fixed">
     <parent link="base_link"/>
     <child link="imu_link"/>
     <origin xyz="${imu_x} ${imu_y} ${imu_z}" rpy="${imu_roll} ${imu_pitch} ${imu_yaw}"/>
   </joint>
 
-  <!-- Camera 1 -->
-  <link name="camera_1_link"/>
-  <joint name="camera_1_joint" type="fixed">
-    <origin xyz="${camera_1_x} ${camera_1_y} ${camera_1_z}" rpy="${camera_1_roll} ${camera_1_pitch} ${camera_1_yaw}"/>
-    <parent link="base_link"/>
-    <child link="camera_1_link"/>
-    <axis xyz="0 0 0"/>
-  </joint>
-
-  <link name="camera_1_color_optical_frame"/>
-  <joint name="camera_1_color_optical_joint" type="fixed">
-    <parent link="camera_1_link"/>
-    <child link="camera_1_color_optical_frame"/>
-    <origin xyz="0.0 0.0 0.0" rpy="-1.57 0.0 -1.57"/>
-  </joint>
-
-  <!-- Camera 2 -->
-  <link name="camera_2_link"/>
-  <joint name="camera_2_joint" type="fixed">
-    <origin xyz="${camera_2_x} ${camera_2_y} ${camera_2_z}" rpy="${camera_2_roll} ${camera_2_pitch} ${camera_2_yaw}"/>
-    <parent link="base_link"/>
-    <child link="camera_2_link"/>
-    <axis xyz="0 0 0"/>
-  </joint>
-
-  <!-- Camera 3 -->
-  <link name="camera_3_link"/>
-  <joint name="camera_3_joint" type="fixed">
-    <origin xyz="${camera_3_x} ${camera_3_y} ${camera_3_z}" rpy="${camera_3_roll} ${camera_3_pitch} ${camera_3_yaw}"/>
-    <parent link="base_link"/>
-    <child link="camera_3_link"/>
-    <axis xyz="0 0 0"/>
-  </joint>
-
-  <!-- Camera 4 -->
-  <link name="camera_4_link"/>
-  <joint name="camera_4_joint" type="fixed">
-    <origin xyz="${camera_4_x} ${camera_4_y} ${camera_4_z}" rpy="${camera_4_roll} ${camera_4_pitch} ${camera_4_yaw}"/>
-    <parent link="base_link"/>
-    <child link="camera_4_link"/>
-    <axis xyz="0 0 0"/>
-  </joint>
+  <!-- Cameras (Mounts + Optical Frames) -->
+  <camera_mount num="1" x="${camera_1_x}" y="${camera_1_y}" z="${camera_1_z}" roll="${camera_1_roll}" pitch="${camera_1_pitch}" yaw="${camera_1_yaw}"/>
+  <camera_mount num="2" x="${camera_2_x}" y="${camera_2_y}" z="${camera_2_z}" roll="${camera_2_roll}" pitch="${camera_2_pitch}" yaw="${camera_2_yaw}"/>
+  <camera_mount num="3" x="${camera_3_x}" y="${camera_3_y}" z="${camera_3_z}" roll="${camera_3_roll}" pitch="${camera_3_pitch}" yaw="${camera_3_yaw}"/>
+  <camera_mount num="4" x="${camera_4_x}" y="${camera_4_y}" z="${camera_4_z}" roll="${camera_4_roll}" pitch="${camera_4_pitch}" yaw="${camera_4_yaw}"/>
 
 </robot>

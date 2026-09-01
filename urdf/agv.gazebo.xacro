@@ -18,7 +18,7 @@
       <alwaysOn>true</alwaysOn>
       <leftJoint>left_wheel_joint</leftJoint>
       <rightJoint>right_wheel_joint</rightJoint>
-      <wheelSeparation>0.654</wheelSeparation>
+      <wheelSeparation>0.81298</wheelSeparation>
       <wheelDiameter>0.200</wheelDiameter>
       <wheelAcceleration>1</wheelAcceleration>
       <wheelTorque>34.52</wheelTorque>
@@ -29,8 +29,8 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <!-- Drive Wheel Properties -->
-  <gazebo reference="left_wheel_joint">
+  <!-- Drive Wheel Contact Properties -->
+  <gazebo reference="left_wheel">
     <mu1>1000000.0</mu1>
     <mu2>100000.0</mu2>
     <kp>5000000.0</kp>
@@ -41,7 +41,7 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <gazebo reference="right_wheel_joint">
+  <gazebo reference="right_wheel">
     <mu1>1000000.0</mu1>
     <mu2>100000.0</mu2>
     <kp>5000000.0</kp>
@@ -49,47 +49,6 @@
     <minDepth>0.001</minDepth>
     <maxVel>0.8</maxVel>
     <fdir1>1 0 0</fdir1>
-    <material>Gazebo/Grey</material>
-  </gazebo>
-
-  <!-- Caster Wheel Joint Properties -->
-  <gazebo reference="left_caster_back_joint">
-    <mu1>1.0</mu1>
-    <mu2>0.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-    <minDepth>0.01</minDepth>
-    <maxVel>1.0</maxVel>
-    <material>Gazebo/Grey</material>
-  </gazebo>
-
-  <gazebo reference="right_caster_back_joint">
-    <mu1>1.0</mu1>
-    <mu2>0.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-    <minDepth>0.01</minDepth>
-    <maxVel>1.0</maxVel>
-    <material>Gazebo/Grey</material>
-  </gazebo>
-
-  <gazebo reference="left_caster_front_joint">
-    <mu1>1.0</mu1>
-    <mu2>0.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-    <minDepth>0.01</minDepth>
-    <maxVel>1.0</maxVel>
-    <material>Gazebo/Grey</material>
-  </gazebo>
-
-  <gazebo reference="right_caster_front_joint">
-    <mu1>1.0</mu1>
-    <mu2>0.0</mu2>
-    <kp>1000000.0</kp>
-    <kd>100.0</kd>
-    <minDepth>0.01</minDepth>
-    <maxVel>1.0</maxVel>
     <material>Gazebo/Grey</material>
   </gazebo>
 
@@ -131,38 +90,44 @@
     <material>Gazebo/Grey</material>
   </gazebo>
 
-  <!-- Front Laser Scanner Sensor -->
-  <gazebo reference="laser_front_link">
-    <material>Gazebo/Blue</material>
-    <sensor type="ray" name="front_laser_sensor">
-      <pose>0.0 0.0 0.0 0 0 0</pose>
-      <visualize>$(arg laser_visual)</visualize>
-      <update_rate>18.0</update_rate>
-      <ray>
-        <scan>
-          <horizontal>
-            <samples>360</samples>
-            <resolution>1</resolution>
-            <min_angle>-0.67</min_angle>
-            <max_angle>3.84</max_angle>
-          </horizontal>
-        </scan>
-        <range>
-          <min>0.120</min>
-          <max>8.5</max>
-          <resolution>0.025</resolution>
-        </range>
-        <noise>
-          <type>gaussian</type>
-          <mean>0.0</mean>
-          <stddev>0.01</stddev>
-        </noise>
-      </ray>
-      <plugin name="front_laser_controller" filename="libgazebo_ros_laser.so">
-        <topicName>scan</topicName>
-        <frameName>laser_front_link</frameName>
-      </plugin>
-    </sensor>
-  </gazebo>
+  <!-- Laser Sensor Plugin Macro -->
+  <xacro:macro name="gazebo_laser_plugin" params="link_name sensor_name topic_name update_rate:=18.0 min_angle:=-3.14159 max_angle:=3.14159">
+    <gazebo reference="${link_name}">
+      <material>Gazebo/Blue</material>
+      <sensor type="ray" name="${sensor_name}">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>$(arg laser_visual)</visualize>
+        <update_rate>${update_rate}</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>360</samples>
+              <resolution>1</resolution>
+              <min_angle>${min_angle}</min_angle>
+              <max_angle>${max_angle}</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.120</min>
+            <max>10.0</max>
+            <resolution>0.025</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </ray>
+        <plugin name="${sensor_name}_controller" filename="libgazebo_ros_laser.so">
+          <topicName>${topic_name}</topicName>
+          <frameName>${link_name}</frameName>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- Front and Back 2D Laser Ray Sensors -->
+  <xacro:gazebo_laser_plugin link_name="laser_front_link" sensor_name="front_laser" topic_name="scan_front"/>
+  <xacro:gazebo_laser_plugin link_name="laser_back_link"  sensor_name="back_laser"  topic_name="scan_back"/>
 
 </robot>

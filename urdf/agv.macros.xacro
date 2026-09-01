@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <!-- Inertia Calculation Macros -->
+  <!-- Inertia Calculation Helpers -->
   <xacro:macro name="cylinder_inertia" params="mass radius length">
     <inertia  ixx="${mass*(3*radius*radius + length*length)/12}" ixy="0" ixz="0"
               iyy="${mass*(3*radius*radius + length*length)/12}" iyz="0"
@@ -15,9 +15,9 @@
   </xacro:macro>
 
   <xacro:macro name="sphere_inertia" params="mass radius">
-    <inertia  ixx="${2*mass*radius*radius/5}" ixy="0" ixz="0"
-              iyy="${2*mass*radius*radius/5}" iyz="0"
-              izz="${2*mass*radius*radius/5}" /> 
+    <inertia ixx="${2*mass*radius*radius/5}" ixy="0" ixz="0"
+             iyy="${2*mass*radius*radius/5}" iyz="0"
+             izz="${2*mass*radius*radius/5}" /> 
   </xacro:macro>
 
   <!-- Drive Wheel Macro -->
@@ -31,68 +31,52 @@
 
     <link name="${wheel_side}_wheel">
       <visual>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
-        <geometry>
-          <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
-        </geometry>
+        <geometry><cylinder length="${wheel_width}" radius="${wheel_radius}"/></geometry>
         <material name="black"/>
       </visual>
       <collision>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <geometry>
-          <cylinder length="${wheel_width}" radius="${wheel_radius}"/>
-        </geometry>
+        <geometry><cylinder length="${wheel_width}" radius="${wheel_radius}"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0 0 0" />
         <mass value="${wheel_mass}" />
-        <inertia ixx="0.01300" ixy="0.0" ixz="0.0"
-                 iyy="0.007042" iyz="0.0"
-                 izz="0.007042" />
+        <inertia ixx="0.01300" ixy="0" ixz="0" iyy="0.007042" iyz="0" izz="0.007042" />
       </inertial>
-      <gazebo reference="${wheel_side}_wheel">
-        <mu1>10.0</mu1>
-        <mu2>10.0</mu2>
-        <kp>500000.0</kp>
-        <kd>10.0</kd>
-        <maxVel>1.1</maxVel>
-        <material>Gazebo/Black</material>
-      </gazebo>
     </link>
+    <gazebo reference="${wheel_side}_wheel">
+      <mu1>10.0</mu1>
+      <mu2>10.0</mu2>
+      <kp>500000.0</kp>
+      <kd>10.0</kd>
+      <maxVel>1.1</maxVel>
+      <material>Gazebo/Black</material>
+    </gazebo>
   </xacro:macro>
 
-  <!-- Front Caster Wheel Macro -->
-  <xacro:macro name="caster_front" params="caster_side offset_y">
-    <joint name="${caster_side}_caster_front_joint" type="fixed">
+  <!-- Passive Caster Wheel Macro -->
+  <xacro:macro name="caster" params="prefix offset_x offset_y mass:=5.2 mu1:=0.0 mu2:=0.0">
+    <joint name="${prefix}_caster_joint" type="fixed">
       <parent link="base_link"/>
-      <child link="${caster_side}_caster_front"/>
-      <origin xyz="0.650 ${offset_y} -0.109" rpy="0 0 0"/>
+      <child link="${prefix}_caster"/>
+      <origin xyz="${offset_x} ${offset_y} -0.109" rpy="0 0 0"/>
     </joint>
 
-    <link name="${caster_side}_caster_front">
+    <link name="${prefix}_caster">
       <visual>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
-        <geometry>
-          <sphere radius="${caster_radius}" />
-        </geometry>
+        <geometry><sphere radius="${caster_radius}" /></geometry>
         <material name="blue"/>
       </visual>
       <collision>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
-        <geometry>
-          <sphere radius="${caster_radius}"/>
-        </geometry>
+        <geometry><sphere radius="${caster_radius}"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
-        <mass value="${caster_mass}"/>
-        <sphere_inertia mass="${caster_mass}" radius="${caster_radius}"/>
+        <mass value="${mass}"/>
+        <xacro:sphere_inertia mass="${mass}" radius="${caster_radius}"/>
       </inertial>
     </link>
 
-    <gazebo reference="${caster_side}_caster_front">
-      <mu1>0.0</mu1>
-      <mu2>0.0</mu2>
+    <gazebo reference="${prefix}_caster">
+      <mu1>${mu1}</mu1>
+      <mu2>${mu2}</mu2>
       <kp>1000000.0</kp>
       <kd>100.0</kd>
       <maxVel>1.0</maxVel>
@@ -100,46 +84,61 @@
     </gazebo>
   </xacro:macro>
 
-  <!-- Back Caster Wheel Macro -->
-  <xacro:macro name="caster_back" params="caster_side offset_y">
-    <joint name="${caster_side}_caster_back_joint" type="fixed">
-      <parent link="base_link"/>
-      <child link="${caster_side}_caster_back"/>
-      <origin xyz="-0.650 ${offset_y} -0.109" rpy="0 0 0"/>
-      <axis xyz="0 0 1"/>
-    </joint>
-
-    <link name="${caster_side}_caster_back">
+  <!-- Cylindrical Laser Scanner Macro -->
+  <xacro:macro name="laser_sensor" params="name x y z roll pitch yaw mass:=0.5925 length:=0.151 radius:=0.05">
+    <link name="${name}_link">
       <visual>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
-        <geometry>
-          <sphere radius="${caster_radius}" />
-        </geometry>
+        <geometry><cylinder length="${length}" radius="${radius}"/></geometry>
         <material name="blue"/>
       </visual>
       <collision>
-        <origin xyz="0 0 0" rpy="0 ${M_PI/2} 0" />
-        <geometry>
-          <sphere radius="${caster_radius}" />
-        </geometry>
+        <geometry><cylinder length="${length}" radius="${radius}"/></geometry>
       </collision>
       <inertial>
-        <origin xyz="0 0 0.0" />
-        <mass value="0.01" />
-        <inertia ixx="0.001" ixy="0.0" ixz="0.0"
-                 iyy="0.001" iyz="0.0"
-                 izz="0.0001" />
+        <mass value="${mass}" />
+        <origin xyz="-7.88E-05 4.35E-05 -0.01694" rpy="0 0 0" />
+        <xacro:cylinder_inertia mass="${mass}" radius="${radius}" length="${length}"/>
       </inertial>
     </link>
-
-    <gazebo reference="${caster_side}_caster_back">
-      <mu1>1.0</mu1>
-      <mu2>1.0</mu2>
-      <kp>1000000.0</kp>
-      <kd>10.0</kd>
-      <maxVel>3.0</maxVel>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="${name}_link"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
+    </joint>
+    <gazebo reference="${name}_link">
       <material>Gazebo/Blue</material>
     </gazebo>
+  </xacro:macro>
+
+  <!-- Camera Mount Joint, Visual Body, and Standard Optical Frame Macro -->
+  <xacro:macro name="camera_mount" params="num x y z roll pitch yaw">
+    <link name="camera_${num}_link">
+      <visual>
+        <geometry><box size="0.025 0.090 0.025"/></geometry>
+        <material name="black"/>
+      </visual>
+      <collision>
+        <geometry><box size="0.025 0.090 0.025"/></geometry>
+      </collision>
+      <inertial>
+        <mass value="0.1"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <xacro:box_inertia mass="0.1" size_x="0.025" size_y="0.090" size_z="0.025"/>
+      </inertial>
+    </link>
+    <joint name="camera_${num}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="camera_${num}_link"/>
+      <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
+      <axis xyz="0 0 0"/>
+    </joint>
+
+    <link name="camera_${num}_color_optical_frame"/>
+    <joint name="camera_${num}_color_optical_joint" type="fixed">
+      <parent link="camera_${num}_link"/>
+      <child link="camera_${num}_color_optical_frame"/>
+      <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    </joint>
   </xacro:macro>
 
 </robot>
