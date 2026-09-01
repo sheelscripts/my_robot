@@ -1,0 +1,11 @@
+services:
+  agv_desktop:
+    build: .
+    image: ros_jazzy:latest
+    container_name: agv_sim
+    shm_size: '4g'
+    ports:
+      - "6080:6080"
+    volumes:
+      - ./src:/ros2_ws/src
+    restart: unless-stopped
