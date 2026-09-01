@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<robot name="agv" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Chassis Physical Dimensions & Mass -->
+  <xacro:property name="chassis_length" value="1.558"/>
+  <xacro:property name="chassis_width"  value="0.965"/>
+  <xacro:property name="chassis_height" value="0.280"/>
+  <xacro:property name="chassis_mass"   value="300.0"/>
+
+  <!-- Drive Wheel Dimensions & Kinematics -->
+  <xacro:property name="wheel_width"    value="0.05"/>
+  <xacro:property name="wheel_radius"   value="0.100"/>
+  <xacro:property name="wheel_mass"     value="2.0"/>
+  <xacro:property name="wheel_track"    value="0.81298"/>
+  <xacro:property name="wheel_offset_z" value="-0.04625"/>
+
+  <!-- Ground Plane Contact Level (Z = -0.14625 m relative to base_link) -->
+  <xacro:property name="ground_contact_z" value="${wheel_offset_z - wheel_radius}"/>
+
+  <!-- Caster Wheel Dimensions & Placement (Coplanar with drive wheels at ground level) -->
+  <xacro:property name="caster_radius"    value="0.062"/>
+  <xacro:property name="caster_offset_x"  value="0.650"/>
+  <xacro:property name="caster_offset_y"  value="0.400"/>
+  <xacro:property name="caster_offset_z"  value="${ground_contact_z + caster_radius}"/> <!-- -0.08425 m -->
+  <xacro:property name="caster_mass"      value="5.2"/>
+
+</robot>

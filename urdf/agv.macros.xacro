@@ -25,7 +25,7 @@
     <joint name="${wheel_side}_wheel_joint" type="continuous">
       <parent link="base_link"/>
       <child link="${wheel_side}_wheel"/>
-      <origin xyz="0.0 ${offset_y} -0.04625" rpy="-1.57 0 0"/>
+      <origin xyz="0.0 ${offset_y} ${wheel_offset_z}" rpy="-1.57 0 0"/>
       <axis xyz="0 0 1"/>
     </joint>
 
@@ -53,11 +53,11 @@
   </xacro:macro>
 
   <!-- Single Passive Caster Macro -->
-  <xacro:macro name="caster" params="prefix offset_x offset_y mass:=5.2 mu1:=0.0 mu2:=0.0">
+  <xacro:macro name="caster" params="prefix offset_x offset_y mass:=${caster_mass} mu1:=0.0 mu2:=0.0">
     <joint name="${prefix}_caster_joint" type="fixed">
       <parent link="base_link"/>
       <child link="${prefix}_caster"/>
-      <origin xyz="${offset_x} ${offset_y} -0.109" rpy="0 0 0"/>
+      <origin xyz="${offset_x} ${offset_y} ${caster_offset_z}" rpy="0 0 0"/>
     </joint>
 
     <link name="${prefix}_caster">
@@ -85,13 +85,13 @@
   </xacro:macro>
 
   <!-- Symmetric Caster Pair Macro (Left & Right) -->
-  <xacro:macro name="caster_pair" params="location offset_x offset_y mass:=5.2">
+  <xacro:macro name="caster_pair" params="location offset_x offset_y mass:=${caster_mass}">
     <xacro:caster prefix="left_${location}"  offset_x="${offset_x}" offset_y="${offset_y}"  mass="${mass}"/>
     <xacro:caster prefix="right_${location}" offset_x="${offset_x}" offset_y="${-offset_y}" mass="${mass}"/>
   </xacro:macro>
 
   <!-- Self-Contained Cylindrical LiDAR Macro (Kinematics + Gz Sim Sensor Stream) -->
-  <xacro:macro name="lidar_sensor" params="name x y z roll pitch yaw topic_name mass:=0.5925 length:=0.151 radius:=0.05 samples:=360 v_samples:=1 min_angle:=-3.14159 max_angle:=3.14159 v_min_angle:=-0.261799 v_max_angle:=0.261799 min_range:=0.120 max_range:=15.0 update_rate:=20.0 noise_stddev:=0.01">
+  <xacro:macro name="lidar_sensor" params="name x y z roll pitch yaw topic_name mass:=0.5925 length:=0.151 radius:=0.05 samples:=360 v_samples:=1 h_resolution:=1 v_resolution:=1 min_angle:=-3.14159 max_angle:=3.14159 v_min_angle:=-0.261799 v_max_angle:=0.261799 min_range:=0.120 max_range:=15.0 range_resolution:=0.01 update_rate:=20.0 noise_stddev:=0.01">
     <link name="${name}_link">
       <visual>
         <geometry><cylinder length="${length}" radius="${radius}"/></geometry>
@@ -125,14 +125,14 @@
           <scan>
             <horizontal>
               <samples>${samples}</samples>
-              <resolution>1</resolution>
+              <resolution>${h_resolution}</resolution>
               <min_angle>${min_angle}</min_angle>
               <max_angle>${max_angle}</max_angle>
             </horizontal>
             <xacro:if value="${v_samples > 1}">
               <vertical>
                 <samples>${v_samples}</samples>
-                <resolution>1</resolution>
+                <resolution>${v_resolution}</resolution>
                 <min_angle>${v_min_angle}</min_angle>
                 <max_angle>${v_max_angle}</max_angle>
               </vertical>
@@ -141,7 +141,7 @@
           <range>
             <min>${min_range}</min>
             <max>${max_range}</max>
-            <resolution>0.015</resolution>
+            <resolution>${range_resolution}</resolution>
           </range>
           <noise>
             <type>gaussian</type>
@@ -173,7 +173,6 @@
       <parent link="base_link"/>
       <child link="${name}_link"/>
       <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
-      <axis xyz="0 0 0"/>
     </joint>
 
     <link name="${name}_color_optical_frame"/>
