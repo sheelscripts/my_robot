@@ -1,0 +1,17 @@
+scan_2d_merger_node:
+  ros__parameters:
+    use_sim_time: true
+    scan_topics: 
+      - /scan_front
+      - /scan_rear
+    merged_frame_id: base_link
+    output_topic: scan
+    angle_min: -3.14159265
+    angle_max: 3.14159265
+    angle_increment: 0.00872665
+    range_min: 0.12
+    range_max: 15.0
+    min_height: -0.10
+    max_height: 0.30
+    queue_size: 20
+    sync_slop: 0.1

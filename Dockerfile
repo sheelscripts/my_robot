@@ -33,9 +33,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Symlink noVNC index for direct access at http://localhost:6080
 RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html
 
-# Setup workspace directory & auto-source ROS 2
+# Build third-party dependencies from source (underlay workspace)
+WORKDIR /opt/ros_underlay_ws
+RUN apt-get update && apt-get install -y git && \
+    mkdir src && cd src && \
+    git clone https://github.com/ali-pahlevani/2D_Scan_Merger_ROS2.git && \
+    cd .. && \
+    /bin/bash -c "source /opt/ros/jazzy/setup.bash && colcon build --symlink-install" && \
+    rm -rf /var/lib/apt/lists/*
+
+# Setup workspace directory & auto-source ROS 2 and underlay
 WORKDIR /ros2_ws
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc \
+    && echo "source /opt/ros_underlay_ws/install/setup.bash" >> /root/.bashrc \
     && echo "if [ -f /ros2_ws/install/setup.bash ]; then source /ros2_ws/install/setup.bash; fi" >> /root/.bashrc
 
 EXPOSE 6080

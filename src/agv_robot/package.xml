@@ -19,6 +19,7 @@
   <!-- Robot description / TF -->
   <depend>xacro</depend>
   <depend>robot_state_publisher</depend>
+  <depend>scan_2d_merger</depend>
 
   <!-- Gazebo Harmonic integration -->
   <depend>ros_gz_sim</depend>

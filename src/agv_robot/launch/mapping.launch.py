@@ -37,10 +37,13 @@ def generate_launch_description():
                  '/odom@nav_msgs/msg/Odometry@gz.msgs.Odometry',
                  '/tf@tf2_msgs/msg/TFMessage@gz.msgs.Pose_V',
                  '/front_lidar/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+                 '/rear_lidar/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
+                 '/lidar_3d/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked',
                  '/joint_states@sensor_msgs/msg/JointState@gz.msgs.Model',
                  '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'
              ],
              remappings=[
-                 ('/front_lidar/scan', '/scan')
+                 ('/front_lidar/scan', '/scan_front'),
+                 ('/rear_lidar/scan', '/scan_rear')
              ])
     ])

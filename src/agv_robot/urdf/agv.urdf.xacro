@@ -37,8 +37,8 @@
   <xacro:caster_pair location="back"  offset_x="${-caster_offset_x}" offset_y="${caster_offset_y}" mass="${caster_mass}"/>
 
   <!-- 2D & 3D LiDAR Sensors (Kinematics + Simulation Stream) -->
-  <xacro:lidar_sensor name="front_lidar" x="${front_lidar_x}" y="${front_lidar_y}" z="${front_lidar_z}" roll="${front_lidar_roll}" pitch="${front_lidar_pitch}" yaw="${front_lidar_yaw}" topic_name="/front_lidar/scan"/>
-  <xacro:lidar_sensor name="rear_lidar"  x="${rear_lidar_x}"  y="${rear_lidar_y}"  z="${rear_lidar_z}"  roll="${rear_lidar_roll}"  pitch="${rear_lidar_pitch}"  yaw="${rear_lidar_yaw}"  topic_name="/rear_lidar/scan"/>
+  <xacro:lidar_sensor name="front_lidar" x="${front_lidar_x}" y="${front_lidar_y}" z="${front_lidar_z}" roll="${front_lidar_roll}" pitch="${front_lidar_pitch}" yaw="${front_lidar_yaw}" topic_name="/front_lidar/scan" min_angle="-2.356" max_angle="2.356"/>
+  <xacro:lidar_sensor name="rear_lidar"  x="${rear_lidar_x}"  y="${rear_lidar_y}"  z="${rear_lidar_z}"  roll="${rear_lidar_roll}"  pitch="${rear_lidar_pitch}"  yaw="${rear_lidar_yaw}"  topic_name="/rear_lidar/scan" min_angle="-2.356" max_angle="2.356"/>
   <xacro:lidar_sensor name="lidar_3d"    x="${lidar_3d_x}"    y="${lidar_3d_y}"    z="${lidar_3d_z}"    roll="${lidar_3d_roll}"    pitch="${lidar_3d_pitch}"    yaw="${lidar_3d_yaw}"    topic_name="/lidar_3d/points" mass="1.5" samples="1800" v_samples="16" v_min_angle="-0.261799" v_max_angle="0.261799" min_range="0.20" max_range="50.0" update_rate="10.0" noise_stddev="0.02"/>
 
   <!-- IMU Sensor -->
