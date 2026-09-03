@@ -74,6 +74,7 @@ setup(
 
     entry_points={
         'console_scripts': [
+            'localization_health = agv_robot.localization:main',
         ],
     },
 )

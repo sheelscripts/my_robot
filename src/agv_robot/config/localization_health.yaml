@@ -1,0 +1,10 @@
+localization_health:
+  ros__parameters:
+    map_frame: "map"
+    num_sectors: 8
+    min_valid_points: 50
+    rmse_localized_threshold: 0.50
+    rmse_degraded_threshold: 0.80
+    std_dev_xy_threshold: 1.0
+    lost_persistence: 5
+    recovery_persistence: 5
