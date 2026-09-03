@@ -48,22 +48,19 @@ def extract_amcl_covariance(msg):
 
 def classify_state(sector_rmses, std_xy, rmse_localized, rmse_degraded, std_xy_limit):
     valid_rmses = sector_rmses[~np.isnan(sector_rmses)]
-    
-    if len(valid_rmses) < 4:
-        return "DEGRADED"  # Too many blind sectors
-        
-    if std_xy >= std_xy_limit:
+
+    if len(valid_rmses) < 4 or std_xy >= std_xy_limit:
         return "DEGRADED"
 
     degraded_sectors = np.sum(valid_rmses >= rmse_localized)
     lost_sectors = np.sum(valid_rmses >= rmse_degraded)
-    
+
     if lost_sectors >= 2 or degraded_sectors >= 3:
         return "LOST"
         
     if degraded_sectors >= 1 or lost_sectors >= 1:
         return "DEGRADED"
-        
+         
     return "LOCALIZED"
 
 

@@ -6,7 +6,6 @@ from scipy.ndimage import distance_transform_edt
 
 class MapModel:
     # Manages the static 2D occupancy grid and converts coordinates.
-
     def __init__(self, occupancy, resolution, origin_x, origin_y):
         self.occupancy = occupancy
         self.resolution = resolution
@@ -22,18 +21,10 @@ class MapModel:
 
     def valid_indices(self, map_x, map_y):
         # Filters out points that fall outside the map boundaries.
-        return (
-            (map_x >= 0) &
-            (map_x < self.occupancy.shape[1]) &
-            (map_y >= 0) &
-            (map_y < self.occupancy.shape[0])
-        )
+        height, width = self.occupancy.shape
+        return (map_x >= 0) & (map_x < width) & (map_y >= 0) & (map_y < height)
 
 
 def build_distance_field(occupancy, resolution):
     # Computes the Euclidean distance from every free cell to the nearest obstacle.
-    occupied = occupancy >= 50
-    free = ~occupied
-    distance_cells = distance_transform_edt(free)
-    distance_meters = distance_cells * resolution
-    return distance_meters
+    return distance_transform_edt(occupancy < 50) * resolution
