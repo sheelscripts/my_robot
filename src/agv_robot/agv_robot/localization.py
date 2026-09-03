@@ -13,9 +13,11 @@ from nav_msgs.msg import OccupancyGrid
 # pyrefly: ignore [missing-import]
 from sensor_msgs.msg import LaserScan
 # pyrefly: ignore [missing-import]
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 # pyrefly: ignore [missing-import]
 from std_msgs.msg import String
+# pyrefly: ignore [missing-import]
+from action_msgs.srv import CancelGoal
 
 from .map import MapModel, build_distance_field
 from .metrics import (
@@ -34,6 +36,7 @@ class LocalizationHealthNode(Node):
             ("std_dev_xy_threshold", 1.0),
             ("lost_persistence", 5),
             ("recovery_persistence", 5),
+            ("nav_cancel_action_name", "/navigate_to_pose/_action/cancel"),
         ])
 
         self.map_model = None
@@ -42,16 +45,25 @@ class LocalizationHealthNode(Node):
         self.current_state = "UNKNOWN"
         self.lost_counter = 0
         self.recovery_counter = 0
+        self.has_canceled_nav = False
+        self.last_cancel_time = self.get_clock().now()
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
+        nav_cancel_name = self.get_parameter("nav_cancel_action_name").value
+        self.cancel_client = self.create_client(CancelGoal, nav_cancel_name)
         self.state_pub = self.create_publisher(String, "/localization_health/state", 10)
 
         map_qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
         self.create_subscription(OccupancyGrid, "/map", self.map_callback, map_qos)
         self.create_subscription(LaserScan, "/scan", self.scan_callback, 10)
         self.create_subscription(PoseWithCovarianceStamped, "/amcl_pose", self.amcl_callback, 10)
+        self.create_subscription(PoseStamped, "/goal_pose", self.goal_callback, 10)
+
+    def goal_callback(self, msg):
+        # Reset the cancel flag so we can cancel the newly received goal if we are still LOST
+        self.has_canceled_nav = False
 
     def amcl_callback(self, msg):
         self.latest_amcl = msg
@@ -102,11 +114,44 @@ class LocalizationHealthNode(Node):
         elif raw_state == "DEGRADED":
             self.current_state = "DEGRADED"
 
+        if self.current_state == "LOST":
+            current_time = self.get_clock().now()
+            if not self.has_canceled_nav or (current_time - self.last_cancel_time).nanoseconds > 1e9:
+                self.cancel_navigation()
+                self.has_canceled_nav = True
+                self.last_cancel_time = current_time
+        elif self.current_state == "LOCALIZED":
+            self.has_canceled_nav = False
+
         self.state_pub.publish(String(data=self.current_state))
         bad_sectors = int(np.sum(sector_rmses >= th_loc))
         self.get_logger().info(
             f"State: {self.current_state} (Raw: {raw_state}) | Global RMSE: {compute_rmse(distances):.3f} | Bad Sectors: {bad_sectors} | StdXY: {std_xy:.3f}"
         )
+
+    def cancel_navigation(self):
+        if not self.cancel_client.wait_for_service(timeout_sec=0.1):
+            self.get_logger().warn("Cancel service not available, cannot stop navigation!")
+            return
+        
+        req = CancelGoal.Request()
+        # Empty goal_info cancels all active goals.
+        future = self.cancel_client.call_async(req)
+        future.add_done_callback(self.cancel_done_callback)
+        self.get_logger().warn("INSTANT STOP: Localization LOST. Sent CancelGoal to Nav2.")
+
+    def cancel_done_callback(self, future):
+        try:
+            response = future.result()
+            if response.return_code == 0 and len(response.goals_canceling) > 0:
+                self.get_logger().info(f"Navigation successfully cancelled! Stopped {len(response.goals_canceling)} active goal(s).")
+            elif response.return_code == 0:
+                # Cancel successful but there were no active goals.
+                pass
+            else:
+                self.get_logger().warn(f"Navigation cancellation rejected (return code: {response.return_code}).")
+        except Exception as e:
+            self.get_logger().error(f"Failed to call cancel service: {e}")
 
 
 def main(args=None):

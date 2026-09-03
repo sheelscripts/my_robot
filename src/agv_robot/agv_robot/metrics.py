@@ -55,10 +55,10 @@ def classify_state(sector_rmses, std_xy, rmse_localized, rmse_degraded, std_xy_l
     degraded_sectors = np.sum(valid_rmses >= rmse_localized)
     lost_sectors = np.sum(valid_rmses >= rmse_degraded)
 
-    if lost_sectors >= 2 or degraded_sectors >= 3:
+    if lost_sectors >= 3 or degraded_sectors >= 4:
         return "LOST"
         
-    if degraded_sectors >= 1 or lost_sectors >= 1:
+    if degraded_sectors >= 3 or lost_sectors >= 2:
         return "DEGRADED"
          
     return "LOCALIZED"
