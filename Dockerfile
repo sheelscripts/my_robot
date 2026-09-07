@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-jazzy-nav2-bringup \
     ros-jazzy-robot-localization \
     ros-jazzy-pointcloud-to-laserscan \
+    ros-jazzy-foxglove-bridge \
     python3-colcon-common-extensions \
     && rm -rf /var/lib/apt/lists/*
 
