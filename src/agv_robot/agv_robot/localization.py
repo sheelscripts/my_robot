@@ -36,7 +36,7 @@ class LocalizationHealthNode(Node):
             ("std_dev_xy_threshold", 1.0),
             ("lost_persistence", 5),
             ("recovery_persistence", 5),
-            ("nav_cancel_action_name", "/navigate_to_pose/_action/cancel"),
+            ("nav_cancel_action_name", "/navigate_to_pose/_action/cancel_goal"),
         ])
 
         self.map_model = None
