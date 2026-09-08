@@ -1,4 +1,4 @@
-# 🤖 Autonomous Warehouse AGV
+# ◆ Autonomous Warehouse AGV
 
 <p align="center">
   <img src="assets/banner.jpg" alt="AGV Navigation Banner" width="100%" />
@@ -29,7 +29,7 @@ Just like an autonomous car, the robot knows the layout of the building, plans t
 
 ---
 
-## 📂 Key Files & What They Do
+## ▤ Key Files & What They Do
 
 ```
 my_robot/
@@ -74,7 +74,7 @@ Imagine walking in your house with the lights off: you touch the walls to confir
        (Laser matches map)           (Laser doesn't match map)
                  │                               │
                  ▼                               ▼
-          🟢 LOCALIZED                       🔴 LOST
+          ● LOCALIZED                        ○ LOST
           Safe to drive!               Robot stops immediately!
 ```
 
@@ -84,7 +84,7 @@ Imagine walking in your house with the lights off: you touch the walls to confir
 
 ---
 
-## ⚙ Pause & Resume: Self-Healing Navigation
+## ✦ Pause & Resume: Self-Healing Navigation
 
 Standard warehouse robots have a frustrating flaw: **if they get lost or bumped off course, they cancel the mission and give up**. A human must walk over, reset the robot, and enter the destination again.
 
@@ -94,19 +94,19 @@ Standard warehouse robots have a frustrating flaw: **if they get lost or bumped 
                   [ Robot driving to destination ]
                                  │
                                  ▼
-               ⚠️ Robot gets bumped or loses its way
+               ◆ Robot gets bumped or loses its way
                                  │
                                  ▼
-                   🛑 PAUSE (Not Cancelled!)
+                   ■ PAUSE (Not Cancelled!)
           The robot stops in place to prevent collisions.
               The mission remains saved in memory.
                                  │
                                  ▼
-                   🔄 Robot figures out where it is
+                   ↻ Robot figures out where it is
              (or a person drives it back to a clear area)
                                  │
                                  ▼
-                  ▶️ RESUME & REPLAN (Automatic)
+                  ► RESUME & REPLAN (Automatic)
         The robot calculates a brand new route from where
             it is standing and continues on its way!
 ```
@@ -125,7 +125,7 @@ Standard warehouse robots have a frustrating flaw: **if they get lost or bumped 
 
 ---
 
-## ⚡ Quick Start
+## ► Quick Start
 
 ### 1. Start the Simulation
 ```bash
