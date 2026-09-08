@@ -37,6 +37,12 @@ amcl:
     z_rand: 0.5
     z_short: 0.05
     scan_topic: scan
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
 
 bt_navigator:
   ros__parameters:
@@ -52,14 +58,9 @@ bt_navigator:
       plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
     navigate_through_poses:
       plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
-    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
-    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
-    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
-    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
-
-    # plugin_lib_names is used to add custom BT plugins to the executor (vector of strings).
-    # Built-in plugins are added automatically
-    # plugin_lib_names: []
+    default_nav_to_pose_bt_xml: "/ros2_ws/install/agv_robot/share/agv_robot/behavior_trees/navigate_to_pose_w_pause_resume.xml"
+    plugin_lib_names:
+      - nav2_pause_resume_controller_bt_node
 
     error_code_names:
       - compute_path_error_code
@@ -113,7 +114,7 @@ controller_server:
       wz_max: 1.9
       iteration_count: 1
       prune_distance: 1.7
-      transform_tolerance: 0.1
+      transform_tolerance: 0.5
       temperature: 0.3
       gamma: 0.015
       motion_model: "DiffDrive"
@@ -150,12 +151,12 @@ controller_server:
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 3.81
+        cost_weight: 7.0
         near_collision_cost: 253
         critical_cost: 300.0
-        consider_footprint: false
+        consider_footprint: true
         collision_cost: 1000000.0
-        near_goal_distance: 1.0
+        near_goal_distance: 0.8
         trajectory_point_step: 2
       PathAlignCritic:
         enabled: true
@@ -192,9 +193,10 @@ local_costmap:
       publish_frequency: 2.0
       global_frame: odom
       robot_base_frame: base_link
+      transform_tolerance: 1.0
       rolling_window: true
-      width: 3
-      height: 3
+      width: 4
+      height: 4
       resolution: 0.05
       footprint: '[[0.90, 0.65], [0.90, -0.65], [-0.90, -0.65], [-0.90, 0.65]]'
       plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]
@@ -221,8 +223,8 @@ local_costmap:
           obstacle_min_range: 0.0
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.70
+        cost_scaling_factor: 2.5
+        inflation_radius: 1.25
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
@@ -249,6 +251,7 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
+      transform_tolerance: 1.0
       footprint: '[[0.90, 0.65], [0.90, -0.65], [-0.90, -0.65], [-0.90, 0.65]]'
       resolution: 0.05
       track_unknown_space: true
@@ -293,8 +296,8 @@ global_costmap:
         map_subscribe_transient_local: True
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.7
+        cost_scaling_factor: 2.5
+        inflation_radius: 1.25
       always_send_full_costmap: True
 
 # The yaml_filename does not need to be specified since it going to be set by defaults in launch.

@@ -50,6 +50,12 @@ setup(
             glob('config/*.yaml')
         ),
 
+        # Behavior trees
+        (
+            os.path.join('share', package_name, 'behavior_trees'),
+            glob('behavior_trees/*.xml')
+        ),
+
         # Maps
         (
             os.path.join('share', package_name, 'maps'),

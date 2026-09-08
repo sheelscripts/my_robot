@@ -42,6 +42,8 @@ def compute_sector_rmse(distances, angles, num_sectors=8):
 
 def extract_amcl_covariance(msg):
     # Returns combined standard deviation in XY
+    if msg is None:
+        return 0.0
     cov = msg.pose.covariance
     return np.sqrt(cov[0] + cov[7])
 

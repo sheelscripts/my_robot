@@ -17,7 +17,7 @@ from geometry_msgs.msg import PoseWithCovarianceStamped, PoseStamped
 # pyrefly: ignore [missing-import]
 from std_msgs.msg import String
 # pyrefly: ignore [missing-import]
-from action_msgs.srv import CancelGoal
+from std_srvs.srv import Trigger
 
 from .map import MapModel, build_distance_field
 from .metrics import (
@@ -36,7 +36,8 @@ class LocalizationHealthNode(Node):
             ("std_dev_xy_threshold", 1.0),
             ("lost_persistence", 5),
             ("recovery_persistence", 5),
-            ("nav_cancel_action_name", "/navigate_to_pose/_action/cancel_goal"),
+            ("pause_service_name", "/pause"),
+            ("resume_service_name", "/resume"),
         ])
 
         self.map_model = None
@@ -45,14 +46,17 @@ class LocalizationHealthNode(Node):
         self.current_state = "UNKNOWN"
         self.lost_counter = 0
         self.recovery_counter = 0
-        self.has_canceled_nav = False
-        self.last_cancel_time = self.get_clock().now()
+        self.is_navigation_paused = False
+        self.pending_pause = False
+        self.pending_resume = False
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
-        nav_cancel_name = self.get_parameter("nav_cancel_action_name").value
-        self.cancel_client = self.create_client(CancelGoal, nav_cancel_name)
+        pause_name = self.get_parameter("pause_service_name").value
+        resume_name = self.get_parameter("resume_service_name").value
+        self.pause_client = self.create_client(Trigger, pause_name)
+        self.resume_client = self.create_client(Trigger, resume_name)
         self.state_pub = self.create_publisher(String, "/localization_health/state", 10)
 
         map_qos = QoSProfile(depth=1, durability=QoSDurabilityPolicy.TRANSIENT_LOCAL)
@@ -62,8 +66,8 @@ class LocalizationHealthNode(Node):
         self.create_subscription(PoseStamped, "/goal_pose", self.goal_callback, 10)
 
     def goal_callback(self, msg):
-        # Reset the cancel flag so we can cancel the newly received goal if we are still LOST
-        self.has_canceled_nav = False
+        if self.current_state == "LOCALIZED":
+            self.resume_navigation()
 
     def amcl_callback(self, msg):
         self.latest_amcl = msg
@@ -75,8 +79,8 @@ class LocalizationHealthNode(Node):
         self.distance_field = build_distance_field(grid, info.resolution)
 
     def scan_callback(self, scan):
-        if not self.map_model or not self.latest_amcl:
-            return self.get_logger().info("Waiting for /map and /amcl_pose...", throttle_duration_sec=2.0)
+        if not self.map_model:
+            return self.get_logger().info("Waiting for /map...", throttle_duration_sec=2.0)
 
         try:
             tf = self.tf_buffer.lookup_transform("map", scan.header.frame_id, scan.header.stamp, timeout=Duration(seconds=0.05))
@@ -115,13 +119,11 @@ class LocalizationHealthNode(Node):
             self.current_state = "DEGRADED"
 
         if self.current_state == "LOST":
-            current_time = self.get_clock().now()
-            if not self.has_canceled_nav or (current_time - self.last_cancel_time).nanoseconds > 1e9:
-                self.cancel_navigation()
-                self.has_canceled_nav = True
-                self.last_cancel_time = current_time
+            if not self.is_navigation_paused and not self.pending_pause:
+                self.pause_navigation()
         elif self.current_state == "LOCALIZED":
-            self.has_canceled_nav = False
+            if (self.is_navigation_paused or self.pending_pause) and not self.pending_resume:
+                self.resume_navigation()
 
         self.state_pub.publish(String(data=self.current_state))
         bad_sectors = int(np.sum(sector_rmses >= th_loc))
@@ -129,29 +131,51 @@ class LocalizationHealthNode(Node):
             f"State: {self.current_state} (Raw: {raw_state}) | Global RMSE: {compute_rmse(distances):.3f} | Bad Sectors: {bad_sectors} | StdXY: {std_xy:.3f}"
         )
 
-    def cancel_navigation(self):
-        if not self.cancel_client.wait_for_service(timeout_sec=0.1):
-            self.get_logger().warn("Cancel service not available, cannot stop navigation!")
+    def pause_navigation(self):
+        if not self.pause_client.wait_for_service(timeout_sec=0.1):
+            self.get_logger().warn("Pause service not available, cannot pause navigation!", throttle_duration_sec=2.0)
             return
-        
-        req = CancelGoal.Request()
-        # Empty goal_info cancels all active goals.
-        future = self.cancel_client.call_async(req)
-        future.add_done_callback(self.cancel_done_callback)
-        self.get_logger().warn("INSTANT STOP: Localization LOST. Sent CancelGoal to Nav2.")
 
-    def cancel_done_callback(self, future):
+        self.pending_pause = True
+        self.is_navigation_paused = True
+        req = Trigger.Request()
+        future = self.pause_client.call_async(req)
+        future.add_done_callback(self.pause_done_callback)
+        self.get_logger().warn("PAUSE REQUEST: Localization LOST. Sent pause request to Nav2.")
+
+    def pause_done_callback(self, future):
+        self.pending_pause = False
         try:
             response = future.result()
-            if response.return_code == 0 and len(response.goals_canceling) > 0:
-                self.get_logger().info(f"Navigation successfully cancelled! Stopped {len(response.goals_canceling)} active goal(s).")
-            elif response.return_code == 0:
-                # Cancel successful but there were no active goals.
-                pass
+            if response.success:
+                self.get_logger().info(f"Navigation paused successfully! Message: {response.message}")
             else:
-                self.get_logger().warn(f"Navigation cancellation rejected (return code: {response.return_code}).")
+                self.get_logger().warn(f"Pause request rejected: {response.message}")
         except Exception as e:
-            self.get_logger().error(f"Failed to call cancel service: {e}")
+            self.get_logger().warn(f"Pause service response exception: {e}")
+
+    def resume_navigation(self):
+        if not self.resume_client.wait_for_service(timeout_sec=0.1):
+            self.get_logger().warn("Resume service not available, cannot resume navigation!", throttle_duration_sec=2.0)
+            return
+
+        self.pending_resume = True
+        req = Trigger.Request()
+        future = self.resume_client.call_async(req)
+        future.add_done_callback(self.resume_done_callback)
+        self.get_logger().info("RESUME REQUEST: Localization LOCALIZED. Sent resume request to Nav2.")
+
+    def resume_done_callback(self, future):
+        self.pending_resume = False
+        self.is_navigation_paused = False
+        try:
+            response = future.result()
+            if response.success:
+                self.get_logger().info(f"Navigation resumed successfully! Message: {response.message}")
+            else:
+                self.get_logger().warn(f"Resume request rejected: {response.message}")
+        except Exception as e:
+            self.get_logger().warn(f"Resume service response exception: {e}")
 
 
 def main(args=None):
