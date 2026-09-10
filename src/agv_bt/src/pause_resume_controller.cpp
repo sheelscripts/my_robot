@@ -16,7 +16,7 @@
 #include <functional>
 
 // ROS includes
-#include "nav2_behavior_tree/plugins/control/pause_resume_controller.hpp"
+#include "pause_resume_controller.hpp"
 
 // Other includes
 #include "behaviortree_cpp/bt_factory.h"

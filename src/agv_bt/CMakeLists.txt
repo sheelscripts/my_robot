@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(agv_behavior_tree CXX)
+project(agv_bt CXX)
 
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
@@ -15,7 +15,7 @@ include_directories(
 )
 
 add_library(nav2_pause_resume_controller_bt_node SHARED
-  plugins/control/pause_resume_controller.cpp
+  src/pause_resume_controller.cpp
 )
 
 target_compile_definitions(nav2_pause_resume_controller_bt_node PRIVATE BT_PLUGIN_EXPORT)
