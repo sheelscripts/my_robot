@@ -61,12 +61,6 @@ setup(
             os.path.join('share', package_name, 'maps'),
             glob('maps/*')
         ),
-
-        # RViz configurations
-        (
-            os.path.join('share', package_name, 'rviz'),
-            glob('rviz/*.rviz')
-        ),
     ],
 
     install_requires=['setuptools'],

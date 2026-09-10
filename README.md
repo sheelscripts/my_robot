@@ -52,7 +52,7 @@ my_robot/
     │   │   └── navigation.launch.py      # Starts the driving brain and screen view
     │   └── urdf/                         # The 3D robot body design and wheels
     │
-    └── nav2_behavior_tree/               # Custom software plugin that adds the Pause & Resume power
+    └── agv_behavior_tree/                # Custom software plugin that adds the Pause & Resume power
 ```
 
 ---
