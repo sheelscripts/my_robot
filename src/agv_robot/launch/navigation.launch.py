@@ -53,7 +53,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             os.path.join(pkg_nav2_bringup, 'launch', 'rviz_launch.py')
         ),
-        launch_arguments={'namespace': '', 'use_namespace': 'False'}.items()
+        launch_arguments={'namespace': '', 'use_namespace': 'False', 'use_sim_time': 'true'}.items()
     )
     
     return LaunchDescription([

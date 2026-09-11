@@ -40,11 +40,9 @@ def generate_launch_description():
                  '/rear_lidar/scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan',
                  '/lidar_3d/points@sensor_msgs/msg/PointCloud2@gz.msgs.PointCloudPacked',
                  '/joint_states@sensor_msgs/msg/JointState@gz.msgs.Model',
-                 '/world/warehouse/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
                  '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock'
              ],
              remappings=[
-                 ('/world/warehouse/clock', '/clock'),
                  ('/front_lidar/scan', '/scan_front'),
                  ('/rear_lidar/scan', '/scan_rear')
              ])
