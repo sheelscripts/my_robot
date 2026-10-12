@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Build & Upload Delta
         env:
-          BALENA_TOKEN: ${{ secrets.balena_engine }}
+          BALENA_TOKEN: ${{ secrets.BALENA_TOKEN }}
         run: |
           # 1. Install and start balena-engine daemon (arm64)
           curl -sL https://github.com/balena-os/balena-engine/releases/download/v20.10.43/balena-engine-v20.10.43-arm64.tar.gz | sudo tar -xz -C /usr/local/bin
