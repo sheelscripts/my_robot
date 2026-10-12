@@ -32,6 +32,7 @@ jobs:
 
           # 4. Export delta tarball for downloadable workflow artifact
           sudo balena-engine save "$REPO:delta-${{ inputs.base }}-to-${{ inputs.target }}" -o delta.tar
+          sudo chmod 666 delta.tar
 
           # 5. Push delta image to registry
           sudo balena-engine push "$REPO:delta-${{ inputs.base }}-to-${{ inputs.target }}"
