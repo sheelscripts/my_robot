@@ -19,18 +19,20 @@ jobs:
           curl -sL https://github.com/balena-os/balena-engine/releases/download/v20.10.43/balena-engine-v20.10.43-arm64.tar.gz | sudo tar -xz -C /usr/local/bin
           sudo balena-engine-daemon & sleep 3
 
-          # 2. Login to GitHub Container Registry directly via balena-engine
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo balena-engine login ghcr.io -u ${{ github.actor }} --password-stdin
+          # 2. Login to GitHub Container Registry using your personal token secret
+          echo "${{ secrets.balena_engine || secrets.BALENA_ENGINE }}" | sudo balena-engine login ghcr.io -u ${{ github.actor }} --password-stdin
 
           # 3. Pull source images, compute binary delta, and push to registry
           REPO="ghcr.io/${{ github.repository }}"
           sudo balena-engine pull "$REPO:${{ inputs.base }}"
           sudo balena-engine pull "$REPO:${{ inputs.target }}"
           sudo balena-engine image delta -t "$REPO:delta-${{ inputs.base }}-to-${{ inputs.target }}" "$REPO:${{ inputs.base }}" "$REPO:${{ inputs.target }}"
-          sudo balena-engine push "$REPO:delta-${{ inputs.base }}-to-${{ inputs.target }}"
 
           # 4. Export delta tarball for downloadable workflow artifact
           sudo balena-engine save "$REPO:delta-${{ inputs.base }}-to-${{ inputs.target }}" -o delta.tar
+
+          # 5. Push delta image to registry
+          sudo balena-engine push "$REPO:delta-${{ inputs.base }}-to-${{ inputs.target }}"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
