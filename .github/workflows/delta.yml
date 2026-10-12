@@ -8,15 +8,15 @@ on:
 
 jobs:
   delta:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       contents: read
       packages: write
     steps:
       - name: Build & Upload Delta
         run: |
-          # 1. Install and start balena-engine daemon
-          curl -sL https://github.com/balena-os/balena-engine/releases/download/v20.10.43/balena-engine-v20.10.43-amd64.tar.gz | sudo tar -xz -C /usr/local/bin
+          # 1. Install and start balena-engine daemon (arm64)
+          curl -sL https://github.com/balena-os/balena-engine/releases/download/v20.10.43/balena-engine-v20.10.43-arm64.tar.gz | sudo tar -xz -C /usr/local/bin
           sudo balena-engine-daemon & sleep 3
 
           # 2. Login to GitHub Container Registry directly via balena-engine
