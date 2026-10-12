@@ -9,7 +9,9 @@ on:
 jobs:
   delta:
     runs-on: ubuntu-latest
-    permissions: { packages: write } # Needed to push delta to ghcr.io
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Build & Upload Delta
         run: |
