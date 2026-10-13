@@ -166,7 +166,7 @@
       </link>
     </model>
 
-    <model name="barrel_obstacle_1">
+    <!-- <model name="barrel_obstacle_1">
       <static>true</static>
       <pose>-2.5 0 0.5 0 0 0</pose>
       <link name="link">
@@ -182,7 +182,7 @@
         <collision name="col"><geometry><cylinder><radius>0.4</radius><length>1.0</length></cylinder></geometry></collision>
         <visual name="vis"><geometry><cylinder><radius>0.4</radius><length>1.0</length></cylinder></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
       </link>
-    </model>
+    </model> -->
 
   </world>
 </sdf>

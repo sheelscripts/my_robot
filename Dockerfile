@@ -28,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-jazzy-robot-localization \
     ros-jazzy-pointcloud-to-laserscan \
     ros-jazzy-foxglove-bridge \
+    ros-jazzy-behaviortree-cpp \
+    python3-numpy \
     python3-colcon-common-extensions \
     && rm -rf /var/lib/apt/lists/*
 
@@ -48,6 +50,12 @@ WORKDIR /ros2_ws
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc \
     && echo "source /opt/ros_underlay_ws/install/setup.bash" >> /root/.bashrc \
     && echo "if [ -f /ros2_ws/install/setup.bash ]; then source /ros2_ws/install/setup.bash; fi" >> /root/.bashrc
+
+# Copy workspace source code and build
+COPY src /ros2_ws/src
+RUN /bin/bash -c "source /opt/ros/jazzy/setup.bash && \
+    source /opt/ros_underlay_ws/install/setup.bash && \
+    colcon build --symlink-install"
 
 EXPOSE 6080
 
